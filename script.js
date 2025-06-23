@@ -183,15 +183,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function makeElementMovable(element) {
+        // Mouse
         element.addEventListener('mousedown', (e) => {
             if (e.target.closest('.resize-handle, .delete-btn, .rotate-btn')) return;
             e.preventDefault();
-            
+
             let offsetX = e.clientX - element.offsetLeft;
             let offsetY = e.clientY - element.offsetTop;
             element.style.cursor = 'grabbing';
             element.style.zIndex = 10;
-            
+
             function mouseMoveHandler(e) {
                 const imageRect = getVisibleImageRect();
                 let newX = e.clientX - offsetX;
@@ -199,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 newX = Math.max(imageRect.x, Math.min(newX, imageRect.x + imageRect.width - element.offsetWidth));
                 newY = Math.max(imageRect.y, Math.min(newY, imageRect.y + imageRect.height - element.offsetHeight));
-                
+
                 element.style.left = `${newX}px`;
                 element.style.top = `${newY}px`;
             }
@@ -214,17 +215,52 @@ document.addEventListener('DOMContentLoaded', () => {
             document.addEventListener('mousemove', mouseMoveHandler);
             document.addEventListener('mouseup', mouseUpHandler);
         });
+
+        // Touch
+        element.addEventListener('touchstart', (e) => {
+            if (e.target.closest('.resize-handle, .delete-btn, .rotate-btn')) return;
+            e.preventDefault();
+
+            const touch = e.touches[0];
+            let offsetX = touch.clientX - element.offsetLeft;
+            let offsetY = touch.clientY - element.offsetTop;
+            element.style.cursor = 'grabbing';
+            element.style.zIndex = 10;
+
+            function touchMoveHandler(e) {
+                const imageRect = getVisibleImageRect();
+                const touch = e.touches[0];
+                let newX = touch.clientX - offsetX;
+                let newY = touch.clientY - offsetY;
+
+                newX = Math.max(imageRect.x, Math.min(newX, imageRect.x + imageRect.width - element.offsetWidth));
+                newY = Math.max(imageRect.y, Math.min(newY, imageRect.y + imageRect.height - element.offsetHeight));
+
+                element.style.left = `${newX}px`;
+                element.style.top = `${newY}px`;
+            }
+
+            function touchEndHandler() {
+                element.style.cursor = 'move';
+                element.style.zIndex = 1;
+                document.removeEventListener('touchmove', touchMoveHandler);
+                document.removeEventListener('touchend', touchEndHandler);
+            }
+
+            document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+            document.addEventListener('touchend', touchEndHandler);
+        }, { passive: false });
     }
 
     function makeElementResizable(element) {
         const handles = element.querySelectorAll('.resize-handle');
         handles.forEach(handle => {
+            // Mouse
             handle.addEventListener('mousedown', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
 
                 let startX = e.clientX;
-                let startY = e.clientY;
                 let startWidth = parseInt(document.defaultView.getComputedStyle(element).width, 10);
                 let startHeight = parseInt(document.defaultView.getComputedStyle(element).height, 10);
                 let startLeft = element.offsetLeft;
@@ -234,7 +270,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 function mouseMoveHandler(e) {
                     const imageRect = getVisibleImageRect();
                     let newWidth, newHeight, newLeft, newTop;
-                    
                     const dx = e.clientX - startX;
 
                     if (handle.classList.contains('br')) {
@@ -246,9 +281,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else { // tl
                         newWidth = startWidth - dx;
                     }
-                    
+
                     newHeight = newWidth / aspectRatio;
-                    
+
                     if (handle.classList.contains('bl') || handle.classList.contains('tl')){
                         newLeft = startLeft + (startWidth - newWidth);
                     } else {
@@ -260,7 +295,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         newTop = startTop;
                     }
-
 
                     if (newWidth > 30 && newHeight > 30 &&
                         newLeft >= imageRect.x &&
@@ -283,12 +317,77 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.addEventListener('mousemove', mouseMoveHandler);
                 document.addEventListener('mouseup', mouseUpHandler);
             });
+
+            // Touch
+            handle.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const touch = e.touches[0];
+                let startX = touch.clientX;
+                let startWidth = parseInt(document.defaultView.getComputedStyle(element).width, 10);
+                let startHeight = parseInt(document.defaultView.getComputedStyle(element).height, 10);
+                let startLeft = element.offsetLeft;
+                let startTop = element.offsetTop;
+                const aspectRatio = startWidth / startHeight;
+
+                function touchMoveHandler(e) {
+                    const imageRect = getVisibleImageRect();
+                    const touch = e.touches[0];
+                    let newWidth, newHeight, newLeft, newTop;
+                    const dx = touch.clientX - startX;
+
+                    if (handle.classList.contains('br')) {
+                        newWidth = startWidth + dx;
+                    } else if (handle.classList.contains('bl')) {
+                        newWidth = startWidth - dx;
+                    } else if (handle.classList.contains('tr')) {
+                        newWidth = startWidth + dx;
+                    } else { // tl
+                        newWidth = startWidth - dx;
+                    }
+
+                    newHeight = newWidth / aspectRatio;
+
+                    if (handle.classList.contains('bl') || handle.classList.contains('tl')){
+                        newLeft = startLeft + (startWidth - newWidth);
+                    } else {
+                        newLeft = startLeft;
+                    }
+
+                    if (handle.classList.contains('tr') || handle.classList.contains('tl')){
+                        newTop = startTop + (startHeight - newHeight);
+                    } else {
+                        newTop = startTop;
+                    }
+
+                    if (newWidth > 30 && newHeight > 30 &&
+                        newLeft >= imageRect.x &&
+                        newTop >= imageRect.y &&
+                        newLeft + newWidth <= imageRect.x + imageRect.width &&
+                        newTop + newHeight <= imageRect.y + imageRect.height) 
+                    {
+                        element.style.width = newWidth + 'px';
+                        element.style.height = newHeight + 'px';
+                        element.style.left = newLeft + 'px';
+                        element.style.top = newTop + 'px';
+                    }
+                }
+
+                function touchEndHandler() {
+                    document.removeEventListener('touchmove', touchMoveHandler);
+                    document.removeEventListener('touchend', touchEndHandler);
+                }
+
+                document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+                document.addEventListener('touchend', touchEndHandler);
+            }, { passive: false });
         });
     }
 
     function makeElementRotatable(element) {
         const rotateHandle = element.querySelector('.rotate-btn');
-        
+        // Mouse
         rotateHandle.addEventListener('mousedown', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -296,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const rect = element.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
-            
+
             const startAngleRad = Math.atan2(e.clientY - centerY, e.clientX - centerX);
             const initialRotationDeg = parseFloat(element.dataset.rotation);
 
@@ -304,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const moveAngleRad = Math.atan2(moveEvent.clientY - centerY, moveEvent.clientX - centerX);
                 const angleDifferenceDeg = (moveAngleRad - startAngleRad) * (180 / Math.PI);
                 const newRotation = initialRotationDeg + angleDifferenceDeg;
-                
+
                 element.style.transform = `rotate(${newRotation}deg)`;
                 element.dataset.rotation = newRotation;
             }
@@ -317,6 +416,38 @@ document.addEventListener('DOMContentLoaded', () => {
             document.addEventListener('mousemove', mouseMoveHandler);
             document.addEventListener('mouseup', mouseUpHandler);
         });
+
+        // Touch
+        rotateHandle.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const rect = element.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const touch = e.touches[0];
+            const startAngleRad = Math.atan2(touch.clientY - centerY, touch.clientX - centerX);
+            const initialRotationDeg = parseFloat(element.dataset.rotation);
+
+            function touchMoveHandler(e) {
+                const touch = e.touches[0];
+                const moveAngleRad = Math.atan2(touch.clientY - centerY, touch.clientX - centerX);
+                const angleDifferenceDeg = (moveAngleRad - startAngleRad) * (180 / Math.PI);
+                const newRotation = initialRotationDeg + angleDifferenceDeg;
+
+                element.style.transform = `rotate(${newRotation}deg)`;
+                element.dataset.rotation = newRotation;
+            }
+
+            function touchEndHandler() {
+                document.removeEventListener('touchmove', touchMoveHandler);
+                document.removeEventListener('touchend', touchEndHandler);
+            }
+
+            document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+            document.addEventListener('touchend', touchEndHandler);
+        }, { passive: false });
     }
     
     function downloadImage() {
@@ -461,5 +592,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileStickersGrid = document.getElementById('mobile-stickers');
     if (desktopStickersGrid && mobileStickersGrid) {
         mobileStickersGrid.innerHTML = desktopStickersGrid.innerHTML;
+    }
+
+    // Generar stickers automáticamente
+    const stickersGrid = document.querySelector('#elements-panel .grid');
+    if (stickersGrid) {
+        // Primer sticker especial (angry)
+        stickersGrid.innerHTML = `
+            <div class="draggable-item bg-white p-4 w-full max-w-[220px] h-48 flex items-center justify-center rounded-2xl border-2 border-red-400 cursor-grab" draggable="true" data-src="imgs/1.png">
+                <img src="imgs/red/angry.png" alt="Stylized red abstract shape resembling an angry face with furrowed brows, set against a plain background, conveying a strong and intense emotional tone" class="max-w-[80%] max-h-[80%] mx-auto my-auto object-contain pointer-events-none">
+            </div>
+        `;
+        // Stickers del 1 al 37
+        for (let i = 1; i <= 37; i++) {
+            stickersGrid.innerHTML += `
+                <div class="draggable-item bg-white p-4 w-full max-w-[220px] h-48 flex items-center justify-center rounded-2xl border-2 border-red-400 cursor-grab" draggable="true" data-src="imgs/red/${i}.png">
+                    <img src="imgs/red/${i}.png" alt="Red Sticker ${i}" class="max-w-[80%] max-h-[80%] mx-auto my-auto object-contain pointer-events-none">
+                </div>
+            `;
+        }
+    }
+
+    // Copiar stickers al panel móvil
+    if (stickersGrid && mobileStickersGrid) {
+        mobileStickersGrid.innerHTML = stickersGrid.innerHTML;
     }
 });

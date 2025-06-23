@@ -45,21 +45,43 @@ body {
     box-shadow: 0 10px 25px -5px rgba(213, 63, 64, 0.5);
 }
 
+/* Corners generales */
 .corner-marker {
     position: absolute;
-    width: 50px;
-    height: 50px;
-    border-color: var(--brand-red-dark);
+    width: 36px;
+    height: 36px;
     border-style: solid;
-    transition: all var(--transition-speed) ease;
+    border-color: var(--brand-red-dark, #e11d48);
+    pointer-events: none;
+    z-index: 10;
 }
+
 #corner-tl { top: 0; left: 0; border-width: 6px 0 0 6px; }
 #corner-tr { top: 0; right: 0; border-width: 6px 6px 0 0; }
 #corner-bl { bottom: 0; left: 0; border-width: 0 0 6px 6px; }
 #corner-br { bottom: 0; right: 0; border-width: 0 6px 6px 0; }
 
 @media (max-width: 768px) {
-    .corner-marker { width: 30px; height: 30px; }
+    .corner-marker {
+        width: 48px;
+        height: 48px;
+    }
+    #corner-tl { top: 12px; left: 12px; border-width: 10px 0 0 10px; }
+    #corner-tr { top: 12px; right: 12px; border-width: 10px 10px 0 0; }
+    #corner-bl { bottom: 12px; left: 12px; border-width: 0 0 10px 10px; }
+    #corner-br { bottom: 12px; right: 12px; border-width: 0 10px 10px 0; }
+}
+
+/* Escritorio (opcional, para mantener el diseño original) */
+@media (min-width: 769px) {
+    .corner-marker {
+        width: 48px;
+        height: 48px;
+    }
+    #corner-tl { top: 0; left: 0; }
+    #corner-tr { top: 0; right: 0; }
+    #corner-bl { bottom: 0; left: 0; }
+    #corner-br { bottom: 0; right: 0; }
 }
 
 #capture-area.drag-over {
