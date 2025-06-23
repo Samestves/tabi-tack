@@ -1,0 +1,153 @@
+/* Archivo: css/style.css */
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #FF6363;
+    color: white;
+}
+:root {
+    --brand-red: #FF6363;
+    --brand-red-dark: #D53F40;
+    --panel-width: 20rem; /* 320px */
+    --transition-speed: 0.4s;
+}
+@media (max-width: 640px) {
+    :root {
+        --panel-width: 16rem; /* 256px */
+    }
+}
+
+/* --- Main Structure & Animations --- */
+#main-content {
+    transition: width var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#elements-panel {
+    transform: translateX(100%);
+    transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0; 
+}
+#elements-panel.open {
+    transform: translateX(0%);
+}
+
+/* --- Component Styles --- */
+.draggable-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px -5px rgba(213, 63, 64, 0.5);
+}
+
+.corner-marker {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border-color: var(--brand-red-dark);
+    border-style: solid;
+    transition: all var(--transition-speed) ease;
+}
+#corner-tl { top: 0; left: 0; border-width: 6px 0 0 6px; }
+#corner-tr { top: 0; right: 0; border-width: 6px 6px 0 0; }
+#corner-bl { bottom: 0; left: 0; border-width: 0 0 6px 6px; }
+#corner-br { bottom: 0; right: 0; border-width: 0 6px 6px 0; }
+
+@media (max-width: 768px) {
+    .corner-marker { width: 30px; height: 30px; }
+}
+
+#capture-area.drag-over {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.placed-element {
+    position: absolute;
+    cursor: move;
+    user-select: none;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.placed-element:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Shared styles for action buttons */
+.delete-btn, .rotate-btn {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    background-color: white;
+    color: black;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s ease-in-out;
+    z-index: 20;
+    font-weight: bold;
+}
+
+.delete-btn {
+    bottom: -38px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+}
+
+.rotate-btn {
+    top: 50%;
+    right: -38px;
+    cursor: grab;
+    transform: translateY(-50%) scale(0.8);
+}
+
+.delete-btn:hover {
+     background-color: var(--brand-red-dark);
+     color: white;
+     transform: translateX(-50%) scale(1.1);
+}
+.rotate-btn:hover {
+     background-color: var(--brand-red-dark);
+     color: white;
+     transform: translateY(-50%) scale(1.1);
+}
+ .rotate-btn:active {
+    cursor: grabbing;
+}
+
+.resize-handle {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background-color: white;
+    border: 2px solid var(--brand-red-dark);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.placed-element:hover .delete-btn,
+.placed-element:hover .resize-handle,
+.placed-element:hover .rotate-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.resize-handle.tl { top: -7px; left: -7px; cursor: nwse-resize; }
+.resize-handle.tr { top: -7px; right: -7px; cursor: nesw-resize; }
+.resize-handle.bl { bottom: -7px; left: -7px; cursor: nesw-resize; }
+.resize-handle.br { bottom: -7px; right: -7px; cursor: nwse-resize; }
+
+/* Hide UI controls when capturing the image */
+.is-capturing .delete-btn, .is-capturing .resize-handle, .is-capturing .rotate-btn, .is-capturing .placed-element:hover, .is-capturing .corner-marker, .is-capturing #download-actions {
+    opacity: 0 !important;
+    border-color: transparent !important;
+}
+
+#canvas-container { padding: 1.5rem; }
+#image-preview { width: 100%; height: 100%; object-fit: contain; }
+
+#menu-toggle { transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1); }
