@@ -31,6 +31,14 @@ body {
     transform: translateX(0%);
 }
 
+#mobile-elements-panel {
+    /* Oculto por defecto, visible con .open */
+    transform: translateY(100%);
+}
+#mobile-elements-panel.open {
+    transform: translateY(0%);
+}
+
 /* --- Component Styles --- */
 .draggable-item:hover {
     transform: scale(1.05);
@@ -162,3 +170,11 @@ body {
 #image-preview { width: 100%; height: 100%; object-fit: contain; }
 
 #menu-toggle { transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1); }
+
+@media (min-width: 768px) {
+  #main-content.panel-open {
+    width: calc(100% - var(--panel-width));
+    margin-right: var(--panel-width);
+    /* Asegura que el contenido no quede tapado */
+  }
+}

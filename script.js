@@ -408,4 +408,58 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 3500);
         });
     }
+
+    // --- Mobile panel logic ---
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const mobilePanel = document.getElementById('mobile-elements-panel');
+    const mobilePanelClose = document.getElementById('mobile-panel-close');
+
+    if (mobileMenuToggle && mobilePanel && mobilePanelClose) {
+        mobileMenuToggle.addEventListener('click', () => {
+            mobilePanel.classList.add('open');
+        });
+        mobilePanelClose.addEventListener('click', () => {
+            mobilePanel.classList.remove('open');
+        });
+        // Permitir drag de stickers en móvil igual que en desktop
+        mobilePanel.querySelectorAll('.draggable-item').forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('element-src', e.currentTarget.dataset.src);
+            });
+        });
+    }
+
+    // --- Mobile sticker tap-to-place logic ---
+    const mobileStickers = document.getElementById('mobile-stickers');
+
+    if (mobileStickers && imagePreview && canvas) {
+        mobileStickers.addEventListener('click', function(e) {
+            const sticker = e.target.closest('.draggable-item');
+            if (!sticker) return;
+            // Solo si hay imagen cargada
+            if (!imagePreview.src || imagePreview.src === window.location.href) return;
+
+            // Calcula el centro del canvas para colocar el sticker
+            const canvasRect = canvas.getBoundingClientRect();
+            const centerX = canvasRect.width / 2;
+            const centerY = canvasRect.height / 2;
+
+            // Usa el src del sticker
+            const src = sticker.dataset.src;
+            if (!src) return;
+
+            // Usa tu función existente para colocar el sticker
+            placeElement(canvasRect.left + centerX, canvasRect.top + centerY, src);
+
+            // Cierra el panel móvil con animación
+            mobilePanel.classList.remove('open');
+        });
+    }
+
+    // Copiar stickers del panel de escritorio al panel móvil automáticamente
+    const desktopStickersGrid = document.querySelector('#elements-panel .grid');
+    const mobileStickersGrid = document.getElementById('mobile-stickers');
+    if (desktopStickersGrid && mobileStickersGrid) {
+        mobileStickersGrid.innerHTML = desktopStickersGrid.innerHTML;
+    }
 });
