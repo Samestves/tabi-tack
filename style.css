@@ -2,7 +2,7 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background-color: #FF6363;
+    background-color: #FF323F;
     color: white;
 }
 
@@ -52,7 +52,7 @@ body {
     width: 36px;
     height: 36px;
     border-style: solid;
-    border-color: var(--brand-red-dark, #e11d48);
+    border-color: #fff; /* <-- blanco */
     pointer-events: none;
     z-index: 10;
 }
