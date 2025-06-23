@@ -178,7 +178,30 @@ document.addEventListener('DOMContentLoaded', () => {
             makeElementMovable(newElementContainer);
             makeElementResizable(newElementContainer);
             makeElementRotatable(newElementContainer);
+            makeElementMultiTouch(newElementContainer);
             canvas.appendChild(newElementContainer);
+
+            newElementContainer.addEventListener('touchstart', function(e) {
+                // Solo en móvil
+                if (window.innerWidth > 768) return;
+                // Quita 'active' de todos los demás
+                document.querySelectorAll('.placed-element.active').forEach(el => {
+                    if (el !== newElementContainer) el.classList.remove('active');
+                });
+                // Activa este
+                newElementContainer.classList.add('active');
+                e.stopPropagation();
+            }, { passive: false });
+
+            // Oculta controles al tocar fuera de cualquier sticker
+            if (!window._tabiMobileStickerTouchListener) {
+                document.body.addEventListener('touchstart', function(e) {
+                    if (!e.target.closest('.placed-element')) {
+                        document.querySelectorAll('.placed-element.active').forEach(el => el.classList.remove('active'));
+                    }
+                }, { passive: false });
+                window._tabiMobileStickerTouchListener = true;
+            }
         };
     }
     
@@ -497,7 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(tempContainer);
 
         // 5. Usa html2canvas sobre el contenedor temporal
-        const exportScale = 2; // o 3 para aún más HD
+        const exportScale = 1.5; // O incluso 1
 
         html2canvas(tempContainer, {
             backgroundColor: null,
@@ -508,8 +531,9 @@ document.addEventListener('DOMContentLoaded', () => {
             scale: exportScale
         }).then(canvas => {
             const link = document.createElement('a');
-            link.download = 'tabi-edit.png';
-            link.href = canvas.toDataURL('image/png');
+            link.download = 'tabi-edit.jpg';
+            // Usa calidad 0.92 (ajusta según prefieras)
+            link.href = canvas.toDataURL('image/jpeg', 0.92);
             link.click();
 
             captureArea.classList.remove('is-capturing');
@@ -608,7 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (stickersGrid) {
         // Primer sticker especial (angry)
         stickersGrid.innerHTML = `
-            <div class="draggable-item bg-white p-4 w-full max-w-[220px] h-48 flex items-center justify-center rounded-2xl border-2 border-red-400 cursor-grab" draggable="true" data-src="imgs/1.png">
+            <div class="draggable-item bg-white p-4 w-full max-w-[220px] h-48 flex items-center justify-center rounded-2xl border-2 border-red-400 cursor-grab" draggable="true" data-src="imgs/red/angry.png">
                 <img src="imgs/red/angry.png" alt="Stylized red abstract shape resembling an angry face with furrowed brows, set against a plain background, conveying a strong and intense emotional tone" class="max-w-[80%] max-h-[80%] mx-auto my-auto object-contain pointer-events-none">
             </div>
         `;
@@ -630,7 +654,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Asigna los eventos dragstart a todos los stickers generados
     assignDragEventsToStickers();
 
-    // Permitir colocar sticker con click en escritorio
+    // Permitir colocar sticker with click en escritorio
     if (stickersGrid && imagePreview && canvas) {
         stickersGrid.addEventListener('click', function(e) {
             const sticker = e.target.closest('.draggable-item');
@@ -649,6 +673,67 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Usa tu función existente para colocar el sticker
             placeElement(centerX, centerY, src);
+        });
+    }
+
+    function makeElementMultiTouch(element) {
+        let initialDistance = null;
+        let initialAngle = null;
+        let initialWidth = null;
+        let initialHeight = null;
+        let initialRotation = null;
+
+        element.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                initialDistance = Math.hypot(
+                    touch2.clientX - touch1.clientX,
+                    touch2.clientY - touch1.clientY
+                );
+                initialAngle = Math.atan2(
+                    touch2.clientY - touch1.clientY,
+                    touch2.clientX - touch1.clientX
+                );
+                initialWidth = element.offsetWidth;
+                initialHeight = element.offsetHeight;
+                initialRotation = parseFloat(element.dataset.rotation) || 0;
+            }
+        }, { passive: false });
+
+        element.addEventListener('touchmove', function(e) {
+            if (e.touches.length === 2 && initialDistance !== null) {
+                e.preventDefault();
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const newDistance = Math.hypot(
+                    touch2.clientX - touch1.clientX,
+                    touch2.clientY - touch1.clientY
+                );
+                const scale = newDistance / initialDistance;
+
+                // Resize
+                element.style.width = initialWidth * scale + 'px';
+                element.style.height = initialHeight * scale + 'px';
+
+                // Rotate
+                const newAngle = Math.atan2(
+                    touch2.clientY - touch1.clientY,
+                    touch2.clientX - touch1.clientX
+                );
+                const angleDiff = (newAngle - initialAngle) * (180 / Math.PI);
+                const newRotation = initialRotation + angleDiff;
+                element.style.transform = `rotate(${newRotation}deg)`;
+                element.dataset.rotation = newRotation;
+            }
+        }, { passive: false });
+
+        element.addEventListener('touchend', function(e) {
+            if (e.touches.length < 2) {
+                initialDistance = null;
+                initialAngle = null;
+            }
         });
     }
 });

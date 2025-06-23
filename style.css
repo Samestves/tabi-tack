@@ -5,6 +5,7 @@ body {
     background-color: #FF6363;
     color: white;
 }
+
 :root {
     --brand-red: #FF6363;
     --brand-red-dark: #D53F40;
@@ -98,6 +99,10 @@ body {
 
 .placed-element:hover {
     border-color: rgba(255, 255, 255, 0.5);
+}
+
+.placed-element.active {
+  box-shadow: 0 0 0 4px #e11d48aa;
 }
 
 /* Shared styles for action buttons */
@@ -198,5 +203,69 @@ body {
     width: calc(100% - var(--panel-width));
     margin-right: var(--panel-width);
     /* Asegura que el contenido no quede tapado */
+  }
+}
+@media (max-width: 768px) {
+  .placed-element .delete-btn {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 1.2rem !important;
+    left: 50%;
+    bottom: -48px;
+    top: auto !important;
+    right: auto !important;
+    transform: translateX(-50%);
+    position: absolute !important;
+    z-index: 2;
+  }
+  .placed-element .rotate-btn {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 1.2rem !important;
+    right: -48px;
+    top: 50%;
+    left: auto !important;
+    bottom: auto !important;
+    transform: translateY(-50%);
+    position: absolute !important;
+    z-index: 2;
+  }
+  .placed-element .resize-handle {
+    width: 22px !important;
+    height: 22px !important;
+  }
+  #download-actions {
+    gap: 0.5rem !important;
+    justify-content: center !important;
+    max-width: 220px !important;
+  }
+  #download-actions button {
+    padding: 0.5rem 0.9rem !important;
+    font-size: 0.95rem !important;
+    min-width: 0 !important;
+  }
+  #download-actions .p-2\.5 {
+    padding: 0.5rem !important;
+  }
+  #download-actions svg {
+    width: 1.1em !important;
+    height: 1.1em !important;
+  }
+  #download-section {
+    height: 2.5rem !important;
+  }
+  /* Mostrar controles solo cuando el sticker está activo en móvil */
+  .placed-element .resize-handle,
+  .placed-element .delete-btn,
+  .placed-element .rotate-btn {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .placed-element.active .resize-handle,
+  .placed-element.active .delete-btn,
+  .placed-element.active .rotate-btn {
+    opacity: 1;
+    pointer-events: auto;
   }
 }
