@@ -594,6 +594,15 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileStickersGrid.innerHTML = desktopStickersGrid.innerHTML;
     }
 
+    // Asignar dragstart a todos los stickers generados dinámicamente
+    function assignDragEventsToStickers() {
+        document.querySelectorAll('.draggable-item').forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('element-src', e.currentTarget.dataset.src);
+            });
+        });
+    }
+
     // Generar stickers automáticamente
     const stickersGrid = document.querySelector('#elements-panel .grid');
     if (stickersGrid) {
@@ -616,5 +625,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // Copiar stickers al panel móvil
     if (stickersGrid && mobileStickersGrid) {
         mobileStickersGrid.innerHTML = stickersGrid.innerHTML;
+    }
+
+    // Asigna los eventos dragstart a todos los stickers generados
+    assignDragEventsToStickers();
+
+    // Permitir colocar sticker con click en escritorio
+    if (stickersGrid && imagePreview && canvas) {
+        stickersGrid.addEventListener('click', function(e) {
+            const sticker = e.target.closest('.draggable-item');
+            if (!sticker) return;
+            // Solo si hay imagen cargada
+            if (!imagePreview.src || imagePreview.src === window.location.href) return;
+
+            // Calcula el centro del canvas para colocar el sticker
+            const canvasRect = canvas.getBoundingClientRect();
+            const centerX = canvasRect.left + canvasRect.width / 2;
+            const centerY = canvasRect.top + canvasRect.height / 2;
+
+            // Usa el src del sticker
+            const src = sticker.dataset.src;
+            if (!src) return;
+
+            // Usa tu función existente para colocar el sticker
+            placeElement(centerX, centerY, src);
+        });
     }
 });
