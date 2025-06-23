@@ -389,4 +389,23 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.removeChild(tempContainer);
         });
     }
+
+    // Quesito flotante animado
+    const cheese = document.getElementById('cheese-float');
+    if (cheese) {
+        let cheeseTimeout = null;
+
+        cheese.style.transform = 'translateY(25%)';
+
+        cheese.addEventListener('click', () => {
+            cheese.style.transform = 'translateY(0)';
+            cheese.style.opacity = '1';
+
+            clearTimeout(cheeseTimeout);
+            cheeseTimeout = setTimeout(() => {
+                cheese.style.transform = 'translateY(25%)';
+                cheese.style.opacity = '0.8';
+            }, 3500);
+        });
+    }
 });

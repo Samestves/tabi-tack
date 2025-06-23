@@ -129,6 +129,17 @@ body {
     z-index: 20;
 }
 
+@media (max-width: 767px) {
+  #cheese-float-container {
+    display: none !important;
+  }
+}
+@media (min-width: 768px) {
+  #cheese-float-container {
+    display: flex !important;
+  }
+}
+
 .placed-element:hover .delete-btn,
 .placed-element:hover .resize-handle,
 .placed-element:hover .rotate-btn {
